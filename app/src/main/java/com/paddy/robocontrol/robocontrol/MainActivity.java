@@ -2,6 +2,7 @@ package com.paddy.robocontrol.robocontrol;
 
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.DialogInterface;
 import android.content.IntentFilter;
 import android.graphics.Rect;
@@ -13,8 +14,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 
 public class MainActivity extends ActionBarActivity implements NewDevicesFoundListener {
@@ -31,10 +35,14 @@ public class MainActivity extends ActionBarActivity implements NewDevicesFoundLi
 
     List<BluetoothDevice> deviceList = new ArrayList<>();
 
-    int UP = 1;
-    int LEFT = 2;
-    int RIGHT = 3;
-    int DOWN = 4;
+    BluetoothDevice controledDevice;
+    DeviceAdapter deviceAdapter;
+    BluetoothSocket transferSocket;
+
+    String UP = "1";
+    String LEFT = "2";
+    String RIGHT = "3";
+    String DOWN = "4";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +68,8 @@ public class MainActivity extends ActionBarActivity implements NewDevicesFoundLi
             }
         });
 
+        deviceAdapter = new DeviceAdapter(MainActivity.this, deviceList);
+
         bluetoothManager = new BluetoothManager();
         discoveryBroadcastMonitor = new DiscoveryBroadcastMonitor();
     }
@@ -76,6 +86,9 @@ public class MainActivity extends ActionBarActivity implements NewDevicesFoundLi
 
         connectToDevice.setEnabled(!deviceList.isEmpty());
 
+        if (bluetoothManager.isBonded(controledDevice)) {
+            connectToSocket(controledDevice);
+        }
     }
 
     private void startDiscovery() {
@@ -88,6 +101,7 @@ public class MainActivity extends ActionBarActivity implements NewDevicesFoundLi
     @Override
     public void addNewDevice(BluetoothDevice remoteDevice) {
         deviceList.add(remoteDevice);
+        deviceAdapter.notifyDataSetInvalidated();
 
         if (!connectToDevice.isEnabled()) {
             connectToDevice.setEnabled(true);
@@ -97,7 +111,6 @@ public class MainActivity extends ActionBarActivity implements NewDevicesFoundLi
     private void showDevicesDialog() {
         final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(
                 MainActivity.this);
-        final DeviceAdapter deviceAdapter = new DeviceAdapter(MainActivity.this, deviceList);
 
         dialogBuilder.setTitle("Select Device:");
         dialogBuilder.setNegativeButton("cancel",
@@ -113,11 +126,36 @@ public class MainActivity extends ActionBarActivity implements NewDevicesFoundLi
                 new DialogInterface.OnClickListener() {
 
                     @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        textViewConnectionStatus.setText("Connected to: " + deviceAdapter.getItem(which).getName());
+                    public void onClick(DialogInterface dialog, int position) {
+                        textViewConnectionStatus.setText("Connected to: " + deviceAdapter.getItem(position).getName());
+                        controledDevice = deviceAdapter.getItem(position);
+                        Log.d(MainActivity.class.getSimpleName(), "UUIDs " + controledDevice.getUuids()[0]);
+
+                        connectToSocket(controledDevice);
                     }
                 });
         dialogBuilder.show();
+    }
+
+    private void connectToSocket(final BluetoothDevice device) {
+        final BluetoothSocket clientSocket;
+        try {
+            clientSocket = device.createRfcommSocketToServiceRecord(UUID.fromString(device.getUuids()[0].toString()));
+            transferSocket = clientSocket;
+            clientSocket.connect();
+        } catch (IOException e) {
+            Log.e("BT COMM", "Bluetooth client IO exception: " + e);
+        }
+    }
+
+    private void sendMessage(BluetoothSocket bluetoothSocket, String message) {
+        final OutputStream outputStream;
+        try {
+            outputStream = bluetoothSocket.getOutputStream();
+            outputStream.write(message.getBytes());
+        } catch (IOException e) {
+            Log.e("BT COMM", "Failed writing message on socket: " + e);
+        }
     }
 
     final View.OnTouchListener printingOnTouchListener = new View.OnTouchListener() {
@@ -152,19 +190,19 @@ public class MainActivity extends ActionBarActivity implements NewDevicesFoundLi
     private void notifyMoveTranslator(int viewId) {
 
         if (viewId == imageButtonUp.getId()) {
-            // send UP
+            sendMessage(transferSocket, UP);
         }
 
         if (viewId == imageButtonRight.getId()) {
-            // send RIGHT
+            sendMessage(transferSocket, RIGHT);
         }
 
         if (viewId == imageButtonLeft.getId()) {
-            // send LEFT
+            sendMessage(transferSocket, LEFT);
         }
 
         if (viewId == imageButtonDown.getId()) {
-            // send DOWN
+            sendMessage(transferSocket, DOWN);
         }
     }
 }

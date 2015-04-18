@@ -2,6 +2,7 @@ package com.paddy.robocontrol.robocontrol;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.widget.Toast;
 
 public class BluetoothManager {
@@ -33,5 +34,9 @@ public class BluetoothManager {
 
     public void startDiscovery() {
         adapter.startDiscovery();
+    }
+
+    public boolean isBonded(BluetoothDevice controlledDevice) {
+        return adapter.getBondedDevices().contains(controlledDevice);
     }
 }
