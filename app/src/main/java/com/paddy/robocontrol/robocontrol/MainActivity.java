@@ -8,6 +8,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +20,7 @@ public class MainActivity extends ActionBarActivity implements NewDevicesFoundLi
     ImageButton imageButtonLeft;
     ImageButton imageButtonRight;
     ImageButton imageButtonDown;
+    Button connectToDevice;
 
     BluetoothManager bluetoothManager;
     DiscoveryBroadcastMonitor discoveryBroadcastMonitor;
@@ -39,6 +41,7 @@ public class MainActivity extends ActionBarActivity implements NewDevicesFoundLi
         imageButtonLeft = (ImageButton) findViewById(R.id.imageButtonLeft);
         imageButtonRight = (ImageButton) findViewById(R.id.imageButtonRight);
         imageButtonDown = (ImageButton) findViewById(R.id.imageButtonDown);
+        connectToDevice = (Button) findViewById(R.id.buttonConnectToDevice);
 
         imageButtonUp.setOnTouchListener(printingOnTouchListener);
         imageButtonLeft.setOnTouchListener(printingOnTouchListener);
@@ -58,6 +61,9 @@ public class MainActivity extends ActionBarActivity implements NewDevicesFoundLi
         registerReceiver(discoveryBroadcastMonitor, new IntentFilter(DiscoveryBroadcastMonitor.DISCOVERY_STARTED));
         registerReceiver(discoveryBroadcastMonitor, new IntentFilter(DiscoveryBroadcastMonitor.DISCOVERY_FINISHED));
         startDiscovery();
+
+        connectToDevice.setEnabled(!deviceList.isEmpty());
+
     }
 
     private void startDiscovery() {
@@ -70,6 +76,11 @@ public class MainActivity extends ActionBarActivity implements NewDevicesFoundLi
     @Override
     public void addNewDevice(BluetoothDevice remoteDevice) {
         deviceList.add(remoteDevice);
+
+        if (!connectToDevice.isEnabled()) {
+            connectToDevice.setEnabled(true);
+        }
+
         Log.d(MainActivity.class.getSimpleName(), "new bt device: " + remoteDevice.getName());
     }
 
