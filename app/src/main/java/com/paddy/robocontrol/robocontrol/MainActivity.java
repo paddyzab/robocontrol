@@ -1,6 +1,8 @@
 package com.paddy.robocontrol.robocontrol;
 
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothDevice;
+import android.content.DialogInterface;
 import android.content.IntentFilter;
 import android.graphics.Rect;
 import android.os.Bundle;
@@ -10,6 +12,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,6 +24,7 @@ public class MainActivity extends ActionBarActivity implements NewDevicesFoundLi
     ImageButton imageButtonRight;
     ImageButton imageButtonDown;
     Button connectToDevice;
+    TextView textViewConnectionStatus;
 
     BluetoothManager bluetoothManager;
     DiscoveryBroadcastMonitor discoveryBroadcastMonitor;
@@ -42,11 +46,19 @@ public class MainActivity extends ActionBarActivity implements NewDevicesFoundLi
         imageButtonRight = (ImageButton) findViewById(R.id.imageButtonRight);
         imageButtonDown = (ImageButton) findViewById(R.id.imageButtonDown);
         connectToDevice = (Button) findViewById(R.id.buttonConnectToDevice);
+        textViewConnectionStatus = (TextView) findViewById(R.id.textViewConnectionStatus);
 
         imageButtonUp.setOnTouchListener(printingOnTouchListener);
         imageButtonLeft.setOnTouchListener(printingOnTouchListener);
         imageButtonRight.setOnTouchListener(printingOnTouchListener);
         imageButtonDown.setOnTouchListener(printingOnTouchListener);
+
+        connectToDevice.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showDevicesDialog();
+            }
+        });
 
         bluetoothManager = new BluetoothManager();
         discoveryBroadcastMonitor = new DiscoveryBroadcastMonitor();
@@ -80,8 +92,32 @@ public class MainActivity extends ActionBarActivity implements NewDevicesFoundLi
         if (!connectToDevice.isEnabled()) {
             connectToDevice.setEnabled(true);
         }
+    }
 
-        Log.d(MainActivity.class.getSimpleName(), "new bt device: " + remoteDevice.getName());
+    private void showDevicesDialog() {
+        final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(
+                MainActivity.this);
+        final DeviceAdapter deviceAdapter = new DeviceAdapter(MainActivity.this, deviceList);
+
+        dialogBuilder.setTitle("Select Device:");
+        dialogBuilder.setNegativeButton("cancel",
+                new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+
+        dialogBuilder.setAdapter(deviceAdapter,
+                new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        textViewConnectionStatus.setText("Connected to: " + deviceAdapter.getItem(which).getName());
+                    }
+                });
+        dialogBuilder.show();
     }
 
     final View.OnTouchListener printingOnTouchListener = new View.OnTouchListener() {
