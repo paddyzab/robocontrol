@@ -1,22 +1,29 @@
 package com.paddy.robocontrol.robocontrol;
 
+import android.bluetooth.BluetoothDevice;
+import android.content.IntentFilter;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageButton;
+import java.util.ArrayList;
+import java.util.List;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends ActionBarActivity implements NewDevicesFoundListener {
 
     ImageButton imageButtonUp;
     ImageButton imageButtonLeft;
     ImageButton imageButtonRight;
     ImageButton imageButtonDown;
+
+    BluetoothManager bluetoothManager;
+    DiscoveryBroadcastMonitor discoveryBroadcastMonitor;
+
+    List<BluetoothDevice> deviceList = new ArrayList<>();
 
     int UP = 1;
     int LEFT = 2;
@@ -37,9 +44,36 @@ public class MainActivity extends ActionBarActivity {
         imageButtonLeft.setOnTouchListener(printingOnTouchListener);
         imageButtonRight.setOnTouchListener(printingOnTouchListener);
         imageButtonDown.setOnTouchListener(printingOnTouchListener);
+
+        bluetoothManager = new BluetoothManager();
+        discoveryBroadcastMonitor = new DiscoveryBroadcastMonitor();
     }
 
-    View.OnTouchListener printingOnTouchListener = new View.OnTouchListener() {
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        bluetoothManager.prepareAdapter(MainActivity.this);
+        registerReceiver(discoveryBroadcastMonitor, new IntentFilter(BluetoothDevice.ACTION_FOUND));
+        registerReceiver(discoveryBroadcastMonitor, new IntentFilter(DiscoveryBroadcastMonitor.DISCOVERY_STARTED));
+        registerReceiver(discoveryBroadcastMonitor, new IntentFilter(DiscoveryBroadcastMonitor.DISCOVERY_FINISHED));
+        startDiscovery();
+    }
+
+    private void startDiscovery() {
+        if (bluetoothManager.isAdapterEnabled() && bluetoothManager.isNotDiscovering()) {
+            deviceList.clear();
+            bluetoothManager.startDiscovery();
+        }
+    }
+
+    @Override
+    public void addNewDevice(BluetoothDevice remoteDevice) {
+        deviceList.add(remoteDevice);
+        Log.d(MainActivity.class.getSimpleName(), "new bt device: " + remoteDevice.getName());
+    }
+
+    final View.OnTouchListener printingOnTouchListener = new View.OnTouchListener() {
 
         Rect rect = null;
 
@@ -85,27 +119,5 @@ public class MainActivity extends ActionBarActivity {
         if (viewId == imageButtonDown.getId()) {
             // send DOWN
         }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 }
