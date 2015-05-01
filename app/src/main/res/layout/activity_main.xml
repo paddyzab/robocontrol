@@ -46,16 +46,28 @@
                  android:layout_width="wrap_content"
                  android:layout_height="wrap_content"
                  android:src="@drawable/up"
-                 android:layout_marginTop="154dp"
+                 android:layout_marginTop="80dp"
                  android:layout_below="@+id/textViewConnectionStatus"
                  android:layout_centerHorizontal="true"/>
 
     <Button android:id="@+id/buttonStop"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="STOP"
+            android:text="@string/stop"
             android:layout_alignParentBottom="true"
             android:layout_alignParentRight="true"
             />
 
+    <ToggleButton android:id="@+id/buttonLightsOn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_toLeftOf="@id/buttonStop"/>
+
+    <TextView android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="@string/lights"
+              android:layout_above="@id/buttonLightsOn"
+              android:paddingLeft="@dimen/big_margin"
+              android:layout_alignStart="@id/buttonLightsOn"/>
 </RelativeLayout>

@@ -10,8 +10,10 @@ import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -27,6 +29,7 @@ public class MainActivity extends ActionBarActivity implements NewDevicesFoundLi
     private ImageButton imageButtonDown;
     private Button buttonStop;
     private Button connectToDevice;
+    private ToggleButton lightsButton;
     private TextView textViewConnectionStatus;
 
     private BluetoothManager bluetoothManager;
@@ -43,6 +46,9 @@ public class MainActivity extends ActionBarActivity implements NewDevicesFoundLi
     private final static String RIGHT = "2";
     private final static String DOWN = "3";
     private final static String STOP = "0";
+
+    private final static String LIGHTS_ON = "9";
+    private final static String LIGHTS_OFF = "8";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +68,17 @@ public class MainActivity extends ActionBarActivity implements NewDevicesFoundLi
         imageButtonRight.setOnClickListener(this);
         imageButtonDown.setOnClickListener(this);
         buttonStop.setOnClickListener(this);
+
+        lightsButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    sendMessage(transferSocket, LIGHTS_OFF);
+                } else {
+                    sendMessage(transferSocket, LIGHTS_ON);
+                }
+            }
+        });
 
         connectToDevice.setOnClickListener(new View.OnClickListener() {
             @Override
