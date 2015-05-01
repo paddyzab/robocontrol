@@ -5,11 +5,9 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.DialogInterface;
 import android.content.IntentFilter;
-import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -21,28 +19,30 @@ import java.util.List;
 import java.util.UUID;
 
 
-public class MainActivity extends ActionBarActivity implements NewDevicesFoundListener {
+public class MainActivity extends ActionBarActivity implements NewDevicesFoundListener, View.OnClickListener {
 
-    ImageButton imageButtonUp;
-    ImageButton imageButtonLeft;
-    ImageButton imageButtonRight;
-    ImageButton imageButtonDown;
-    Button connectToDevice;
-    TextView textViewConnectionStatus;
+    private ImageButton imageButtonUp;
+    private ImageButton imageButtonLeft;
+    private ImageButton imageButtonRight;
+    private ImageButton imageButtonDown;
+    private Button buttonStop;
+    private Button connectToDevice;
+    private TextView textViewConnectionStatus;
 
-    BluetoothManager bluetoothManager;
-    DiscoveryBroadcastMonitor discoveryBroadcastMonitor;
+    private BluetoothManager bluetoothManager;
+    private DiscoveryBroadcastMonitor discoveryBroadcastMonitor;
 
-    List<BluetoothDevice> deviceList = new ArrayList<>();
+    private List<BluetoothDevice> deviceList = new ArrayList<>();
 
-    BluetoothDevice controledDevice;
-    DeviceAdapter deviceAdapter;
-    BluetoothSocket transferSocket;
+    private BluetoothDevice controlledDevice;
+    private DeviceAdapter deviceAdapter;
+    private BluetoothSocket transferSocket;
 
-    String UP = "1";
-    String LEFT = "2";
-    String RIGHT = "3";
-    String DOWN = "4";
+    private final static String UP = "1";
+    private final static String LEFT = "4";
+    private final static String RIGHT = "2";
+    private final static String DOWN = "3";
+    private final static String STOP = "0";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,12 +54,14 @@ public class MainActivity extends ActionBarActivity implements NewDevicesFoundLi
         imageButtonRight = (ImageButton) findViewById(R.id.imageButtonRight);
         imageButtonDown = (ImageButton) findViewById(R.id.imageButtonDown);
         connectToDevice = (Button) findViewById(R.id.buttonConnectToDevice);
+        buttonStop = (Button) findViewById(R.id.buttonStop);
         textViewConnectionStatus = (TextView) findViewById(R.id.textViewConnectionStatus);
 
-        imageButtonUp.setOnTouchListener(printingOnTouchListener);
-        imageButtonLeft.setOnTouchListener(printingOnTouchListener);
-        imageButtonRight.setOnTouchListener(printingOnTouchListener);
-        imageButtonDown.setOnTouchListener(printingOnTouchListener);
+        imageButtonUp.setOnClickListener(this);
+        imageButtonLeft.setOnClickListener(this);
+        imageButtonRight.setOnClickListener(this);
+        imageButtonDown.setOnClickListener(this);
+        buttonStop.setOnClickListener(this);
 
         connectToDevice.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -86,8 +88,8 @@ public class MainActivity extends ActionBarActivity implements NewDevicesFoundLi
 
         connectToDevice.setEnabled(!deviceList.isEmpty());
 
-        if (bluetoothManager.isBonded(controledDevice)) {
-            connectToSocket(controledDevice);
+        if (bluetoothManager.isBonded(controlledDevice)) {
+            connectToSocket(controlledDevice);
         }
     }
 
@@ -128,10 +130,10 @@ public class MainActivity extends ActionBarActivity implements NewDevicesFoundLi
                     @Override
                     public void onClick(DialogInterface dialog, int position) {
                         textViewConnectionStatus.setText("Connected to: " + deviceAdapter.getItem(position).getName());
-                        controledDevice = deviceAdapter.getItem(position);
-                        Log.d(MainActivity.class.getSimpleName(), "UUIDs " + controledDevice.getUuids()[0]);
+                        controlledDevice = deviceAdapter.getItem(position);
+                        Log.d(MainActivity.class.getSimpleName(), "UUIDs " + controlledDevice.getUuids()[0]);
 
-                        connectToSocket(controledDevice);
+                        connectToSocket(controlledDevice);
                     }
                 });
         dialogBuilder.show();
@@ -158,51 +160,26 @@ public class MainActivity extends ActionBarActivity implements NewDevicesFoundLi
         }
     }
 
-    final View.OnTouchListener printingOnTouchListener = new View.OnTouchListener() {
-
-        Rect rect = null;
-
-        @Override
-        public boolean onTouch(View view, MotionEvent event) {
-
-            if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                rect = new Rect(view.getLeft(), view.getTop(), view.getRight(), view.getBottom());
-                Log.d(MainActivity.class.getSimpleName(), "++++ Started: " + view.getId());
-                notifyMoveTranslator(view.getId());
-
-            }
-            if (event.getAction() == MotionEvent.ACTION_MOVE) {
-                if (rect != null) {
-                    if (!rect.contains(view.getLeft() + (int) event.getX(), view.getTop() + (int) event.getY())) {
-                        Log.d(MainActivity.class.getSimpleName(), "---- Exit: " + view.getId());
-                        //Touch left view boundaries do not notify
-                    } else {
-                        Log.d(MainActivity.class.getSimpleName(), "++++ InView: " + view.getId());
-                        notifyMoveTranslator(view.getId());
-                    }
-                }
-            }
-            return false;
-        }
-    };
-
-    //TODO here we will send event to the Robot
-    private void notifyMoveTranslator(int viewId) {
-
-        if (viewId == imageButtonUp.getId()) {
+    @Override
+    public void onClick(View view) {
+        if (view.getId() == imageButtonUp.getId()) {
             sendMessage(transferSocket, UP);
         }
 
-        if (viewId == imageButtonRight.getId()) {
+        if (view.getId() == imageButtonRight.getId()) {
             sendMessage(transferSocket, RIGHT);
         }
 
-        if (viewId == imageButtonLeft.getId()) {
+        if (view.getId() == imageButtonLeft.getId()) {
             sendMessage(transferSocket, LEFT);
         }
 
-        if (viewId == imageButtonDown.getId()) {
+        if (view.getId() == imageButtonDown.getId()) {
             sendMessage(transferSocket, DOWN);
+        }
+
+        if (view.getId() == buttonStop.getId()) {
+            sendMessage(transferSocket, STOP);
         }
     }
 }
