@@ -58,7 +58,7 @@
             android:layout_alignParentRight="true"
             />
 
-    <ToggleButton android:id="@+id/buttonLightsOn"
+    <ToggleButton android:id="@+id/buttonLights"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
@@ -67,7 +67,7 @@
     <TextView android:layout_width="wrap_content"
               android:layout_height="wrap_content"
               android:text="@string/lights"
-              android:layout_above="@id/buttonLightsOn"
+              android:layout_above="@id/buttonLights"
               android:paddingLeft="@dimen/big_margin"
-              android:layout_alignStart="@id/buttonLightsOn"/>
+              android:layout_alignStart="@id/buttonLights"/>
 </RelativeLayout>

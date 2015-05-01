@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -62,6 +63,7 @@ public class MainActivity extends ActionBarActivity implements NewDevicesFoundLi
         connectToDevice = (Button) findViewById(R.id.buttonConnectToDevice);
         buttonStop = (Button) findViewById(R.id.buttonStop);
         textViewConnectionStatus = (TextView) findViewById(R.id.textViewConnectionStatus);
+        lightsButton = (ToggleButton) findViewById(R.id.buttonLights);
 
         imageButtonUp.setOnClickListener(this);
         imageButtonLeft.setOnClickListener(this);
@@ -168,12 +170,17 @@ public class MainActivity extends ActionBarActivity implements NewDevicesFoundLi
     }
 
     private void sendMessage(BluetoothSocket bluetoothSocket, String message) {
-        final OutputStream outputStream;
-        try {
-            outputStream = bluetoothSocket.getOutputStream();
-            outputStream.write(message.getBytes());
-        } catch (IOException e) {
-            Log.e("BT COMM", "Failed writing message on socket: " + e);
+
+        if (bluetoothSocket != null) {
+            final OutputStream outputStream;
+            try {
+                outputStream = bluetoothSocket.getOutputStream();
+                outputStream.write(message.getBytes());
+            } catch (IOException e) {
+                Log.e("BT COMM", "Failed writing message on socket: " + e);
+            }
+        } else {
+            Toast.makeText(this, "Connect to the Robot first...", Toast.LENGTH_LONG).show();
         }
     }
 
