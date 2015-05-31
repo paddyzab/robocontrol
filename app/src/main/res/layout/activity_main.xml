@@ -20,6 +20,12 @@
             android:text="Connect"
             android:layout_alignParentRight="true"/>
 
+    <SeekBar android:id="@+id/progressBarSpeed"
+             android:max="10"
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             android:layout_below="@id/buttonConnectToDevice"/>
+
 
     <ImageButton android:id="@+id/imageButtonLeft"
                  android:layout_width="wrap_content"
@@ -59,10 +65,10 @@
             />
 
     <ToggleButton android:id="@+id/buttonLights"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_toLeftOf="@id/buttonStop"/>
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:layout_alignParentBottom="true"
+                  android:layout_toLeftOf="@id/buttonStop"/>
 
     <TextView android:layout_width="wrap_content"
               android:layout_height="wrap_content"

@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -32,6 +33,7 @@ public class MainActivity extends ActionBarActivity implements NewDevicesFoundLi
     private Button connectToDevice;
     private ToggleButton lightsButton;
     private TextView textViewConnectionStatus;
+    private SeekBar progressBarSpeed;
 
     private BluetoothManager bluetoothManager;
     private DiscoveryBroadcastMonitor discoveryBroadcastMonitor;
@@ -42,14 +44,14 @@ public class MainActivity extends ActionBarActivity implements NewDevicesFoundLi
     private DeviceAdapter deviceAdapter;
     private BluetoothSocket transferSocket;
 
-    private final static String UP = "1";
-    private final static String LEFT = "4";
-    private final static String RIGHT = "2";
-    private final static String DOWN = "3";
-    private final static String STOP = "0";
+    private final static String UP = "W";
+    private final static String LEFT = "A";
+    private final static String RIGHT = "D";
+    private final static String DOWN = "S";
+    private final static String STOP = "X";
 
-    private final static String LIGHTS_ON = "9";
-    private final static String LIGHTS_OFF = "8";
+    private final static String LIGHTS_ON = "O";
+    private final static String LIGHTS_OFF = "L";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,12 +66,15 @@ public class MainActivity extends ActionBarActivity implements NewDevicesFoundLi
         buttonStop = (Button) findViewById(R.id.buttonStop);
         textViewConnectionStatus = (TextView) findViewById(R.id.textViewConnectionStatus);
         lightsButton = (ToggleButton) findViewById(R.id.buttonLights);
+        progressBarSpeed = (SeekBar) findViewById(R.id.progressBarSpeed);
 
         imageButtonUp.setOnClickListener(this);
         imageButtonLeft.setOnClickListener(this);
         imageButtonRight.setOnClickListener(this);
         imageButtonDown.setOnClickListener(this);
         buttonStop.setOnClickListener(this);
+
+        progressBarSpeed.setOnSeekBarChangeListener(seekBarChangeListener);
 
         lightsButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -206,4 +211,24 @@ public class MainActivity extends ActionBarActivity implements NewDevicesFoundLi
             sendMessage(transferSocket, STOP);
         }
     }
+
+    private final SeekBar.OnSeekBarChangeListener seekBarChangeListener = new SeekBar.OnSeekBarChangeListener() {
+
+        int selectedSpeed;
+
+        @Override
+        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+            selectedSpeed = progress;
+        }
+
+        @Override
+        public void onStartTrackingTouch(SeekBar seekBar) {
+            // nop
+        }
+
+        @Override
+        public void onStopTrackingTouch(SeekBar seekBar) {
+            sendMessage(transferSocket, String.valueOf(selectedSpeed));
+        }
+    };
 }
