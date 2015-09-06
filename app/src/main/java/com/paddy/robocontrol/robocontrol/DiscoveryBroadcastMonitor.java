@@ -25,7 +25,7 @@ public class DiscoveryBroadcastMonitor extends BroadcastReceiver {
             final BluetoothDevice remoteDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 
             if (context instanceof NewDevicesFoundListener) {
-                listener = ((MainActivity) context);
+                listener = ((ControlActivity) context);
             }
 
             if (listener != null) {

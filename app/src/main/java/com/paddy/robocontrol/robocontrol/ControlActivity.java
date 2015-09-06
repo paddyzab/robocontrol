@@ -16,6 +16,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -23,7 +24,7 @@ import java.util.List;
 import java.util.UUID;
 
 
-public class MainActivity extends ActionBarActivity implements NewDevicesFoundListener, View.OnClickListener {
+public class ControlActivity extends ActionBarActivity implements NewDevicesFoundListener, View.OnClickListener {
 
     private ImageButton imageButtonUp;
     private ImageButton imageButtonLeft;
@@ -31,9 +32,7 @@ public class MainActivity extends ActionBarActivity implements NewDevicesFoundLi
     private ImageButton imageButtonDown;
     private Button buttonStop;
     private Button connectToDevice;
-    private ToggleButton lightsButton;
     private TextView textViewConnectionStatus;
-    private SeekBar progressBarSpeed;
 
     private BluetoothManager bluetoothManager;
     private DiscoveryBroadcastMonitor discoveryBroadcastMonitor;
@@ -50,13 +49,16 @@ public class MainActivity extends ActionBarActivity implements NewDevicesFoundLi
     private final static String DOWN = "S";
     private final static String STOP = "X";
 
-    private final static String LIGHTS_ON = "O";
-    private final static String LIGHTS_OFF = "L";
+    private final static String LASER_ON = "L";
+    private final static String LASER_OFF = "Q";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.control_activity);
+
+        final ToggleButton lightsButton = (ToggleButton) findViewById(R.id.buttonLights);
+        final SeekBar progressBarSpeed = (SeekBar) findViewById(R.id.progressBarSpeed);
 
         imageButtonUp = (ImageButton) findViewById(R.id.imageButtonUp);
         imageButtonLeft = (ImageButton) findViewById(R.id.imageButtonLeft);
@@ -65,8 +67,6 @@ public class MainActivity extends ActionBarActivity implements NewDevicesFoundLi
         connectToDevice = (Button) findViewById(R.id.buttonConnectToDevice);
         buttonStop = (Button) findViewById(R.id.buttonStop);
         textViewConnectionStatus = (TextView) findViewById(R.id.textViewConnectionStatus);
-        lightsButton = (ToggleButton) findViewById(R.id.buttonLights);
-        progressBarSpeed = (SeekBar) findViewById(R.id.progressBarSpeed);
 
         imageButtonUp.setOnClickListener(this);
         imageButtonLeft.setOnClickListener(this);
@@ -80,9 +80,9 @@ public class MainActivity extends ActionBarActivity implements NewDevicesFoundLi
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    sendMessage(transferSocket, LIGHTS_OFF);
+                    sendMessage(transferSocket, LASER_OFF);
                 } else {
-                    sendMessage(transferSocket, LIGHTS_ON);
+                    sendMessage(transferSocket, LASER_ON);
                 }
             }
         });
@@ -94,7 +94,7 @@ public class MainActivity extends ActionBarActivity implements NewDevicesFoundLi
             }
         });
 
-        deviceAdapter = new DeviceAdapter(MainActivity.this, deviceList);
+        deviceAdapter = new DeviceAdapter(ControlActivity.this, deviceList);
 
         bluetoothManager = new BluetoothManager();
         discoveryBroadcastMonitor = new DiscoveryBroadcastMonitor();
@@ -104,7 +104,7 @@ public class MainActivity extends ActionBarActivity implements NewDevicesFoundLi
     protected void onResume() {
         super.onResume();
 
-        bluetoothManager.prepareAdapter(MainActivity.this);
+        bluetoothManager.prepareAdapter(ControlActivity.this);
         registerReceiver(discoveryBroadcastMonitor, new IntentFilter(BluetoothDevice.ACTION_FOUND));
         registerReceiver(discoveryBroadcastMonitor, new IntentFilter(DiscoveryBroadcastMonitor.DISCOVERY_STARTED));
         registerReceiver(discoveryBroadcastMonitor, new IntentFilter(DiscoveryBroadcastMonitor.DISCOVERY_FINISHED));
@@ -136,7 +136,7 @@ public class MainActivity extends ActionBarActivity implements NewDevicesFoundLi
 
     private void showDevicesDialog() {
         final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(
-                MainActivity.this);
+                ControlActivity.this);
 
         dialogBuilder.setTitle("Select Device:");
         dialogBuilder.setNegativeButton("cancel",
@@ -155,7 +155,7 @@ public class MainActivity extends ActionBarActivity implements NewDevicesFoundLi
                     public void onClick(DialogInterface dialog, int position) {
                         textViewConnectionStatus.setText("Connected to: " + deviceAdapter.getItem(position).getName());
                         controlledDevice = deviceAdapter.getItem(position);
-                        Log.d(MainActivity.class.getSimpleName(), "UUIDs " + controlledDevice.getUuids()[0]);
+                        Log.d(ControlActivity.class.getSimpleName(), "UUIDs " + controlledDevice.getUuids()[0]);
 
                         connectToSocket(controlledDevice);
                     }
